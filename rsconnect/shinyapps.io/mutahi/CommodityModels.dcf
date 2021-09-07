@@ -1,0 +1,13 @@
+name: CommodityModels
+title: CommodityModels
+username:
+account: mutahi
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4536840
+bundleId: 4970826
+url: https://mutahi.shinyapps.io/CommodityModels/
+when: 1630054887.21556
+lastSyncTime: 1630054887.21556
+asMultiple: FALSE
+asStatic: FALSE

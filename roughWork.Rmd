@@ -1,0 +1,84 @@
+---
+title: "CommodityModelRough"
+author: "Mutahi Wachira"
+date: "25/08/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(quantmod)
+library(tidyverse)
+library(tidyquant)
+library(forecast)
+library(xts)
+```
+
+## Importing Commodity Data
+
+```{r}
+
+getSymbols("ZW=F", from = "2015-01-01")
+
+data <- get(getSymbols("ZW=F", from = "2015-01-01"))
+# What is adjusted?
+
+data <- na.approx(data)
+
+data
+```
+
+```{r}
+data %>% 
+  as_tibble(rownames = "date") %>% 
+  mutate(date = as.Date(date)) %>% 
+  rename("Close" = "ZW=F.Close") %>% 
+  ggplot(aes(x = date, y = "Close")) +
+  geom_line() +
+  theme_tq()
+```
+
+# Establishing the seasonality
+
+```{r}
+
+dataMonthly <- to.monthly(data)
+adj <- Ad(data)
+freq <- 250
+
+adj.ts <- ts(adj, frequency = freq)
+
+whole.periods <- floor(nrow(adj.ts) / freq)
+partial.periods <- nrow(adj.ts) %% freq
+
+desired.test <- 3
+training.end.row <- whole.periods + 1
+training.end.col <- ifelse(partial.periods == 0, freq - desired.test, freq - partial.periods - desired.test)
+if(partial.periods < desired.test){
+  training.end.row <- whole.periods
+  training.end.col <- freq - (desired.test - partial.periods)
+}
+training.ts <- window(adj.ts, c(1,1), c(training.end.row,training.end.col))
+testing.ts <- window(adj.ts, c(training.end.row, training.end.col + 1))
+
+fit.stl <- stl(training.ts[,1], s.window = "period")
+
+zoo::autoplot(fit.stl, main = "STL Decomposition")
+
+head(remainder(fit.stl),100)
+```
+
+```{r}
+
+cleanTS <- fit.stl$time.series %>% 
+  as_tibble()
+
+data %>% 
+  as_tibble(rownames = "Date") %>% 
+  rename(.fn = function(x) = str_trim("ZW=F"))
+
+"ZW=F.Test" %>% str_replace(, side = "left")
+
+```
+
